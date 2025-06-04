@@ -20,7 +20,7 @@ const App = () => {
   }
 
   if (!data) {
-    return React.createElement('div', { style: { color: 'white', fontFamily: 'Calibri' } }, 'Loading...');
+    return React.createElement('div', null, 'Loading...');
   }
 
   const coeffRows = data.coefficients.map((c, i) =>
@@ -28,19 +28,14 @@ const App = () => {
       React.createElement('td', null, c.name),
       React.createElement('td', null, c.estimate.toFixed(3)),
       React.createElement('td', null, `${data.confint[i].lower.toFixed(3)} - ${data.confint[i].upper.toFixed(3)}`),
-      React.createElement('td', null, c["p.value"].toExponential(2))
+      React.createElement('td', null, c.p.value ? c.p.value.toExponential(2) : 'n/a')
     )
   );
 
   React.useEffect(() => {
-    if (!data || !data.coefficients) return;
-
-    const ctx = document.getElementById('coefplot')?.getContext('2d');
-    if (!ctx) return;
-
+    const ctx = document.getElementById('coefplot').getContext('2d');
     const labels = data.coefficients.map(c => c.name);
     const values = data.coefficients.map(c => c.estimate);
-
     new Chart(ctx, {
       type: 'bar',
       data: {
@@ -70,12 +65,10 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
-  return React.createElement('div', { style: { fontFamily: 'Calibri', color: 'white', backgroundColor: '#121212', padding: '20px' } },
+  return React.createElement('div', null,
     React.createElement('h1', null, 'Model Summary'),
-    React.createElement('p', null, `R²: ${data["r.squared"].toFixed(4)}`),
-    React.createElement('p', null, `Adjusted R²: ${data["adj.r.squared"].toFixed(4)}`),
     React.createElement('button', { onClick: download }, 'Download JSON'),
-    React.createElement('table', { border: 1, cellPadding: 6, style: { marginTop: '10px' } },
+    React.createElement('table', null,
       React.createElement('thead', null,
         React.createElement('tr', null,
           React.createElement('th', null, 'Term'),
@@ -86,10 +79,10 @@ const App = () => {
       ),
       React.createElement('tbody', null, coeffRows)
     ),
-    React.createElement('h2', null, 'Coefficient Plot'),
     React.createElement('canvas', { id: 'coefplot', width: 400, height: 300 })
   );
 };
 
 ReactDOM.render(React.createElement(App), document.getElementById('root'));
+
 
