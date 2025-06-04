@@ -17,7 +17,7 @@ model_visual <- function(model) {
   }
   tmp <- tempfile("rmodelsviz")
   dir.create(tmp)
-  html_src <- system.file("html", package = "rmodelsviz")
+  html_src <- system.file("html", package = "modelsviz")
   file.copy(html_src, tmp, recursive = TRUE)
   html_dir <- file.path(tmp, "html")
 
