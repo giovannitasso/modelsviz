@@ -23,14 +23,17 @@ const App = () => {
     return React.createElement("div", null, "Loading...");
   }
 
-  const coeffRows = data.coefficients.map((c, i) =>
+  const safe = (val, decimals = 3) =>
+    typeof val === "number" && isFinite(val) ? val.toFixed(decimals) : "n/a";
+
+  const coeffRows = (data.coefficients || []).map((c, i) =>
     React.createElement("tr", { key: i },
-      React.createElement("td", null, c.name),
-      React.createElement("td", null, c.estimate?.toFixed(3) ?? "n/a"),
+      React.createElement("td", null, c.name || "?"),
+      React.createElement("td", null, safe(c.estimate)),
       React.createElement("td", null,
-        `${data.confint?.[i]?.lower?.toFixed(3) ?? "?"} - ${data.confint?.[i]?.upper?.toFixed(3) ?? "?"}`
+        `${safe(data.confint?.[i]?.lower)} - ${safe(data.confint?.[i]?.upper)}`
       ),
-      React.createElement("td", null, c.p?.value?.toExponential(2) ?? "n/a")
+      React.createElement("td", null, safe(c?.["p.value"], 2))
     )
   );
 
@@ -50,6 +53,7 @@ const App = () => {
         }]
       },
       options: {
+        responsive: true,
         scales: {
           y: { beginAtZero: true }
         }
@@ -68,7 +72,7 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
-  return React.createElement("div", null,
+  return React.createElement("div", { style: { padding: "1em", color: "white" } },
     React.createElement("h1", null, "Model Summary"),
     React.createElement("button", { onClick: download }, "Download JSON"),
     React.createElement("table", null,
@@ -87,7 +91,6 @@ const App = () => {
 };
 
 ReactDOM.render(React.createElement(App), document.getElementById("root"));
-
 
 
 
