@@ -1,41 +1,43 @@
 const App = () => {
   const [data, setData] = React.useState(null);
-  const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
     fetch('data.json')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch data.json');
-        return res.json();
-      })
+      .then(res => res.json())
       .then(setData)
       .catch(err => {
         console.error("Error loading JSON:", err);
-        setError(err.message);
       });
   }, []);
 
-  if (error) {
-    return React.createElement('div', { style: { color: 'red' } }, `Error: ${error}`);
-  }
-
-  if (!data) {
+  if (!data || !data.coefficients || !data.confint) {
     return React.createElement('div', null, 'Loading...');
   }
 
-  const coeffRows = data.coefficients.map((c, i) =>
-    React.createElement('tr', { key: i },
-      React.createElement('td', null, c.name),
-      React.createElement('td', null, c.estimate.toFixed(3)),
-      React.createElement('td', null, `${data.confint[i].lower.toFixed(3)} - ${data.confint[i].upper.toFixed(3)}`),
-      React.createElement('td', null, c["p.value"] ? c["p.value"].toExponential(2) : 'n/a')
-    )
-  );
+  const coeffRows = data.coefficients.map((c, i) => {
+    const conf = data.confint[i] || {};
+    return React.createElement('tr', { key: i },
+      React.createElement('td', null, c.name || 'N/A'),
+      React.createElement('td', null, isFinite(c.estimate) ? c.estimate.toFixed(3) : 'N/A'),
+      React.createElement('td', null,
+        isFinite(conf.lower) && isFinite(conf.upper)
+          ? `${conf.lower.toFixed(3)} - ${conf.upper.toFixed(3)}`
+          : 'N/A'
+      ),
+      React.createElement('td', null,
+        isFinite(c["p.value"]) ? c["p.value"].toExponential(2) : 'n/a')
+    );
+  });
 
   React.useEffect(() => {
-    const ctx = document.getElementById('coefplot').getContext('2d');
+    if (!data || !data.coefficients) return;
+
+    const ctx = document.getElementById('coefplot')?.getContext('2d');
+    if (!ctx) return;
+
     const labels = data.coefficients.map(c => c.name);
     const values = data.coefficients.map(c => c.estimate);
+
     new Chart(ctx, {
       type: 'bar',
       data: {
@@ -84,5 +86,6 @@ const App = () => {
 };
 
 ReactDOM.render(React.createElement(App), document.getElementById('root'));
+
 
 
