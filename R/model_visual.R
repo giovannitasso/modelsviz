@@ -15,11 +15,19 @@ model_visual <- function(model) {
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     stop("jsonlite package is required")
   }
-  tmp <- tempfile("rmodelsviz")
+
+  tmp <- tempfile("modelsviz")
   dir.create(tmp)
+
   html_src <- system.file("html", package = "modelsviz")
-  file.copy(html_src, tmp, recursive = TRUE)
-  html_dir <- file.path(tmp, "html")
+  html_dir <- tmp
+  dir.create(html_dir, showWarnings = FALSE, recursive = TRUE)
+
+  file.copy(
+    from = list.files(html_src, full.names = TRUE),
+    to   = html_dir,
+    recursive = TRUE
+  )
 
   sm <- summary(model)
   coef_df <- as.data.frame(sm$coefficients)
@@ -47,3 +55,4 @@ model_visual <- function(model) {
   utils::browseURL(index)
   invisible(index)
 }
+
