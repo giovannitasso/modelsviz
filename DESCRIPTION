@@ -1,4 +1,4 @@
-Package: rmodelsviz
+Package: modelsviz
 Type: Package
 Title: Interactive Model Visualization
 Version: 0.1.0
