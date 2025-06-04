@@ -1,12 +1,23 @@
 const App = () => {
   const [data, setData] = React.useState(null);
+  const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
     fetch('data.json')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch data.json');
+        return res.json();
+      })
       .then(setData)
-      .catch((err) => console.error("Error loading JSON:", err));
+      .catch(err => {
+        console.error("Error loading JSON:", err);
+        setError(err.message);
+      });
   }, []);
+
+  if (error) {
+    return React.createElement('div', { style: { color: 'red' } }, `Error: ${error}`);
+  }
 
   if (!data) {
     return React.createElement('div', { style: { color: 'white', fontFamily: 'Calibri' } }, 'Loading...');
@@ -22,9 +33,14 @@ const App = () => {
   );
 
   React.useEffect(() => {
-    const ctx = document.getElementById('coefplot').getContext('2d');
+    if (!data || !data.coefficients) return;
+
+    const ctx = document.getElementById('coefplot')?.getContext('2d');
+    if (!ctx) return;
+
     const labels = data.coefficients.map(c => c.name);
     const values = data.coefficients.map(c => c.estimate);
+
     new Chart(ctx, {
       type: 'bar',
       data: {
