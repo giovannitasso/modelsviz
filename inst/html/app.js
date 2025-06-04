@@ -26,16 +26,16 @@ const App = () => {
   const safe = (val, decimals = 3) =>
     typeof val === "number" && isFinite(val) ? val.toFixed(decimals) : "n/a";
 
-  const coeffRows = (data.coefficients || []).map((c, i) =>
-    React.createElement("tr", { key: i },
-      React.createElement("td", null, c.name || "?"),
-      React.createElement("td", null, safe(c.estimate)),
-      React.createElement("td", null,
-        `${safe(data.confint?.[i]?.lower)} - ${safe(data.confint?.[i]?.upper)}`
-      ),
-      React.createElement("td", null, safe(c?.["p.value"], 2))
-    )
-  );
+const coeffRows = data.coefficients.map((c, i) =>
+  React.createElement("tr", { key: i },
+    React.createElement("td", null, c.name),
+    React.createElement("td", null, c.estimate?.toFixed(3) ?? "n/a"),
+    React.createElement("td", null,
+      `${data.confint?.[i]?.lower?.toFixed(3) ?? "?"} - ${data.confint?.[i]?.upper?.toFixed(3) ?? "?"}`
+    ),
+    React.createElement("td", null, c["p.value"]?.toExponential(2) ?? "n/a")
+  )
+);
 
   React.useEffect(() => {
     const canvas = document.getElementById("coefplot");
