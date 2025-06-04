@@ -13,22 +13,21 @@
 #' @export
 model_visual <- function(model) {
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
-    stop("jsonlite package is required")
+    stop("The 'jsonlite' package is required but not installed.")
   }
 
+  # Crear carpeta temporal
   tmp <- tempfile("modelsviz")
-  dir.create(tmp)
+  dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
 
+  # Copiar archivos HTML desde inst/html/
   html_src <- system.file("html", package = "modelsviz")
-  html_dir <- tmp
-  dir.create(html_dir, showWarnings = FALSE, recursive = TRUE)
+  if (html_src == "") stop("Could not locate HTML assets in the package.")
 
-  file.copy(
-    from = list.files(html_src, full.names = TRUE),
-    to   = html_dir,
-    recursive = TRUE
-  )
+  html_files <- list.files(html_src, full.names = TRUE)
+  file.copy(html_files, tmp, recursive = TRUE)
 
+  # Crear resumen del modelo
   sm <- summary(model)
   coef_df <- as.data.frame(sm$coefficients)
   conf_df <- as.data.frame(stats::confint(model))
@@ -50,9 +49,15 @@ model_visual <- function(model) {
     adj.r.squared = unname(sm$adj.r.squared)
   )
 
-  jsonlite::write_json(data, file.path(html_dir, "data.json"), auto_unbox = TRUE)
-  index <- file.path(html_dir, "index.html")
+  # Escribir JSON en la misma carpeta que index.html
+  json_path <- file.path(tmp, "data.json")
+  jsonlite::write_json(data, json_path, auto_unbox = TRUE)
+
+  # Abrir index.html en navegador
+  index <- file.path(tmp, "index.html")
   utils::browseURL(index)
+
   invisible(index)
 }
+
 
