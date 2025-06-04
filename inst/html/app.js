@@ -4,11 +4,12 @@ const App = () => {
   React.useEffect(() => {
     fetch('data.json')
       .then(res => res.json())
-      .then(setData);
+      .then(setData)
+      .catch((err) => console.error("Error loading JSON:", err));
   }, []);
 
   if (!data) {
-    return React.createElement('div', null, 'Loading...');
+    return React.createElement('div', { style: { color: 'white', fontFamily: 'Calibri' } }, 'Loading...');
   }
 
   const coeffRows = data.coefficients.map((c, i) =>
@@ -16,7 +17,7 @@ const App = () => {
       React.createElement('td', null, c.name),
       React.createElement('td', null, c.estimate.toFixed(3)),
       React.createElement('td', null, `${data.confint[i].lower.toFixed(3)} - ${data.confint[i].upper.toFixed(3)}`),
-      React.createElement('td', null, c.p.value.toExponential(2))
+      React.createElement('td', null, c["p.value"].toExponential(2))
     )
   );
 
@@ -53,10 +54,12 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
-  return React.createElement('div', null,
+  return React.createElement('div', { style: { fontFamily: 'Calibri', color: 'white', backgroundColor: '#121212', padding: '20px' } },
     React.createElement('h1', null, 'Model Summary'),
+    React.createElement('p', null, `R²: ${data["r.squared"].toFixed(4)}`),
+    React.createElement('p', null, `Adjusted R²: ${data["adj.r.squared"].toFixed(4)}`),
     React.createElement('button', { onClick: download }, 'Download JSON'),
-    React.createElement('table', null,
+    React.createElement('table', { border: 1, cellPadding: 6, style: { marginTop: '10px' } },
       React.createElement('thead', null,
         React.createElement('tr', null,
           React.createElement('th', null, 'Term'),
@@ -67,8 +70,10 @@ const App = () => {
       ),
       React.createElement('tbody', null, coeffRows)
     ),
+    React.createElement('h2', null, 'Coefficient Plot'),
     React.createElement('canvas', { id: 'coefplot', width: 400, height: 300 })
   );
 };
 
 ReactDOM.render(React.createElement(App), document.getElementById('root'));
+
