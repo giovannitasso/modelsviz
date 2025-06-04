@@ -1,56 +1,42 @@
-const { useState, useEffect, createElement } = React;
+const App = () => {
+  const [data, setData] = React.useState(null);
+  const [error, setError] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
 
-function App() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
+  React.useEffect(() => {
     fetch("data.json")
       .then(res => {
-        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         return res.json();
       })
-      .then(setData)
-      .catch(err => {
-        console.error("Error loading JSON:", err);
-        setError(err.message);
-      })
+      .then(json => setData(json))
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
-    return createElement("div", null, "Cargando datos del modelo...");
+    return React.createElement("div", null, "Cargando...");
   }
 
   if (error) {
-    return createElement("div", { style: { color: "red" } }, `Error: ${error}`);
+    return React.createElement("div", { style: { color: "red" } }, `Error: ${error}`);
   }
 
-  if (!data || !Array.isArray(data.coefficients)) {
-    return createElement("div", { style: { color: "orange" } }, "Datos inválidos.");
+  if (!data || !data.coefficients) {
+    return React.createElement("div", { style: { color: "orange" } }, "Datos no válidos.");
   }
 
-  // Encabezados de la tabla
-  const headerRow = createElement("tr", null,
-    ["Term", "Estimate", "Std.Error", "Statistic", "p-value"].map((h, i) =>
-      createElement("th", { key: i }, h)
+  const coeffRows = data.coefficients.map((c, i) =>
+    React.createElement("tr", { key: i },
+      React.createElement("td", null, c.name),
+      React.createElement("td", null, c.estimate?.toFixed(3) ?? "n/a"),
+      React.createElement("td", null, `${data.confint?.[i]?.lower?.toFixed(3) ?? "?"} - ${data.confint?.[i]?.upper?.toFixed(3) ?? "?"}`),
+      React.createElement("td", null, c["p.value"]?.toExponential(2) ?? "n/a")
     )
   );
 
-  // Filas de datos
-  const rows = data.coefficients.map((c, i) =>
-    createElement("tr", { key: i },
-      createElement("td", null, c.name),
-      createElement("td", null, c.estimate?.toFixed(3) ?? "n/a"),
-      createElement("td", null, c["std.error"]?.toFixed(3) ?? "n/a"),
-      createElement("td", null, c.statistic?.toFixed(3) ?? "n/a"),
-      createElement("td", null, c["p.value"]?.toExponential(2) ?? "n/a")
-    )
-  );
-
-  // Render gráfico
-  useEffect(() => {
+  // Esta parte es segura ahora, porque solo se ejecuta después de tener data
+  React.useEffect(() => {
     const canvas = document.getElementById("coefplot");
     if (!canvas) return;
 
@@ -66,33 +52,32 @@ function App() {
         }]
       },
       options: {
-        scales: { y: { beginAtZero: true } }
+        scales: {
+          y: { beginAtZero: true }
+        }
       }
     });
   }, [data]);
 
-  const download = () => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "model.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  return createElement("div", null,
-    createElement("h1", null, "Model Summary"),
-    createElement("button", { onClick: download }, "Download JSON"),
-    createElement("table", null,
-      createElement("thead", null, headerRow),
-      createElement("tbody", null, rows)
+  return React.createElement("div", null,
+    React.createElement("h1", null, "Resumen del Modelo"),
+    React.createElement("table", null,
+      React.createElement("thead", null,
+        React.createElement("tr", null,
+          React.createElement("th", null, "Término"),
+          React.createElement("th", null, "Estimación"),
+          React.createElement("th", null, "95% CI"),
+          React.createElement("th", null, "p-valor")
+        )
+      ),
+      React.createElement("tbody", null, coeffRows)
     ),
-    createElement("canvas", { id: "coefplot", width: 400, height: 300 })
+    React.createElement("canvas", { id: "coefplot", width: 400, height: 300 })
   );
-}
+};
 
-ReactDOM.render(createElement(App), document.getElementById("root"));
+ReactDOM.render(React.createElement(App), document.getElementById("root"));
+
 
 
 
