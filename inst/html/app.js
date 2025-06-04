@@ -28,7 +28,7 @@ const App = () => {
       React.createElement('td', null, c.name),
       React.createElement('td', null, c.estimate.toFixed(3)),
       React.createElement('td', null, `${data.confint[i].lower.toFixed(3)} - ${data.confint[i].upper.toFixed(3)}`),
-      React.createElement('td', null, c.p.value ? c.p.value.toExponential(2) : 'n/a')
+      React.createElement('td', null, c["p.value"] ? c["p.value"].toExponential(2) : 'n/a')
     )
   );
 
